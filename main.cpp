@@ -18,6 +18,11 @@ int main()
     background.setOrigin(bg.getSize().x/2,bg.getSize().y/2);
     background.setPosition(view.getCenter());
 
+    // Debug lines
+    Vertex line [] = {
+        Vertex(Vector2f(0,0)),
+        Vertex(Vector2f(640,480))
+    };
 
     // Player
     Player player;
@@ -55,6 +60,7 @@ int main()
 
         window.setView(view);
         window.draw(background);
+        window.draw(line,2,Lines);
         player.draw(window);
         window.draw(box_sprite);
         window.display();
