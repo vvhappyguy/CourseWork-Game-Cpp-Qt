@@ -9,7 +9,7 @@ int main()
 {
     RenderWindow window(VideoMode(640, 480), "Stack Attack");
 
-	View view( FloatRect(0, 0, 450, 280) );
+	View view( FloatRect(0, 0, 640, 480) );
 
     // Background
     Texture bg;
@@ -34,6 +34,12 @@ int main()
 
     while(window.isOpen())
     {
+        float time = clock.getElapsedTime().asMicroseconds();
+		clock.restart();
+
+		time = time/500;  // ����� ���������� �������� ����
+
+		if (time > 40) time = 40;
 
         Event event;
 		while (window.pollEvent(event))
@@ -42,7 +48,7 @@ int main()
 				window.close();
 		}
 
-        player.update();
+        player.update(time);
 
         box_y += 0.1;
         box_sprite.setPosition(box_x,box_y);
