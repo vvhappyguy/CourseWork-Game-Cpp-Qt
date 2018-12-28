@@ -5,6 +5,9 @@
 #include "Textures.h"
 #include <map>
 #include <string>
+#include <utility>
+#include "Enviroment.hpp"
+#include <iostream>
 
 using namespace sf;
 
@@ -12,17 +15,21 @@ class Player
 {
     public:
         float _x,_y;
-        float _dx, _dy; 
+        float _dx, _dy;
+        std::pair<SUInt, SUInt> num; // y / x
         
         Texture _texture;
         Sprite _sprite;
+
+        Enviroment* env;
 
         enum {stay,walk,jump,move} STATE;
 
         std::map<std::string,bool> key;
 
-        Player()
+        Player(Enviroment* _env)
         {
+            this->env = _env;
             this->_texture.loadFromFile(PLAYER_TEXTURE_PATH);
             this->_sprite.setTexture(_texture);
             this->_x = 640/2;
@@ -33,10 +40,25 @@ class Player
             STATE = stay;
         };
 
+        int getState(){
+            if(STATE == stay)
+                return 0;
+        }
+
+        bool setState(){
+            STATE = stay;
+        }
+
         void draw(RenderWindow& window)
         {
+            _sprite.setPosition(this->_x,this->_y);
             window.draw(_sprite);
         }
+
+        	FloatRect getRect()
+	{
+		return FloatRect(this->_x,this->_y,32,64);
+	};
 
         void moving()
         {
@@ -82,8 +104,8 @@ class Player
             // if(Keyboard::isKeyPressed(Keyboard::S))
             //     _y += 1;
             key["A"]=key["D"]=key["W"]=false;
-
-            _sprite.setPosition(this->_x,this->_y);
+             _sprite.setPosition(this->_x,this->_y);
+           
         };
 
         void update(float time)
@@ -95,7 +117,8 @@ class Player
             
 
             _x += _dx*time;
-            _y += _dy*time;
+                    
+           _y += _dy*time;
             if (_y >416)
             {
                 _y = 416;
@@ -106,6 +129,12 @@ class Player
                 _x = 608;       
             if (_x < 0)
                 _x = 0;
+
+        // std::pair<short int,short int> l = this->env->getPosition(_x,_y);
+        // std::cout << "X["<<l.second<<"] Y["<<l.first<<"]"<< std::endl;
+        // if(_y >= this->env->getMaxYbyColumn(l.first))
+        //     _y+=(this->env->countYbyColumn(l.first) - l.first)*32;
+        
         };
 
 };

@@ -2,11 +2,12 @@
 #define ENV_H
 
 #include <utility>
+#include <vector>
 
 class Enviroment
 {
     public:
-        bool box_matrix[15][20];
+        bool box_matrix[15][20]; // y,x
         Enviroment()
         {
             for(int i = 0; i < 15; i++)
@@ -21,18 +22,16 @@ class Enviroment
 
         short int countYbyColumn(size_t col)
         {
-            short int count =0;
-            for (int i = 14; i >= 0; i--)
-                if(box_matrix[col])
-                    count++;
-                else
-                    return count;
-            return count;
+            short int j = -1;
+            for(int i = 0; i < 15; i++)
+                if(this->box_matrix[i][col] == 0)
+                    j+=1;
+            return j;
         };
 
-        std::pair<short int, short int> getPostion(float x, float y)
+        std::pair<short int, short int> getPosition(float x, float y)
         {
-            return std::pair<short int, short int>((short int)x/20, (short int)x/15);
+            return std::pair<short int, short int>((short int)y/20, (short int)x/15);
         };
 
 

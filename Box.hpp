@@ -10,36 +10,59 @@
 
 using namespace sf;
 
+
 class Box
 {
     public:
-        std::pair<float, float> position;
-        std::pair<short, short> num;
-        float max_y_col = 0;
-        short int col  = -1;
-        const float _dy = 0.1;
-        float _dx = 0;
-        int y_col;
-        Enviroment* env;
+        // Positions
+        std::pair<float, float> position; // x,y
+        std::pair<float, float> cnt_pos; // center x,y
+        std::pair<SUInt, SUInt> num; // raw, col
+        SUInt max_raw = 0; // max y level
+
+        // Texture
         Texture _texture;
         Sprite _sprite;
+
+        // Game Env pointer
+        Enviroment* env;
+
+        // Speed
+        const float _dy = 0.1; // Always down
+        float _dx = 0; // Only if collision with Player
+
+        // State ???
         enum {fall,stay} STATE;
+        SUInt max_y_col;
 
-    Box(Enviroment* env)
+        Box(Enviroment* env)
         {
-            this->col = (rand()%20);
-            this->max_y_col = env->getMaxYbyColumn(col) - 32;
-            this->y_col = env->countYbyColumn(col);
+            // Save pointer to env
+            this->env = env;
 
-            std::cout << "Box c-tor "<< max_y_col <<" " << y_col << std::endl;
+            // Texture
             this->_texture.loadFromFile(BOX_TEXTURE_PATH);
             this->_sprite.setTexture(_texture);
-            position.first = col*32;
-            position.second = 0;
-            this->_dx = 0;
-            this->env = env;
-            STATE = fall;
+
+            // Generate random col
+            this->num.second = (rand()%20);
+            this->max_y_col = env->countYbyColumn(num.second);
+            this->num.first = this->max_y_col;
+            
+            this->position.first = (this->num.second-1)*32;
+            this->position.second = 0;
+
+            cnt_pos.first, cnt_pos.second = 0;
+
+            
+            env->box_matrix[num.first][num.second] = true;
+            //std::cout << "Box c-tor "<< num.second << " max_y_col:" << max_y_col <<  std::endl;
         };
+
+        FloatRect getRect()
+	    {
+		    return FloatRect(this->position.first,this->position.second,32,32);
+	    }
 
         void draw(RenderWindow& window)
         {
@@ -51,13 +74,15 @@ class Box
 
         void update(float time)
         {
-            num = env->getPostion(position.first,position.second);
+            if (STATE == stay)
+                return;
+            num = env->getPosition(position.first,position.second);
             position.second += _dy*time;
-                if (position.second > max_y_col)
+                if (position.second > this->max_y_col*32)
                 {
-                    position.second = max_y_col;
+                    position.second = this->max_y_col*32;
                     STATE = stay;
-                    env->box_matrix[col][y_col] = 1;
+                    // env->box_matrix[num.first][num.second] = 1;
                 }
             _sprite.setPosition(position.first,position.second);
         };

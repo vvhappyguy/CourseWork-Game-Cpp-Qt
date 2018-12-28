@@ -4,7 +4,7 @@
 #include "Box.hpp"
 #include <iostream>
 
-
+enum {stay,walk,jump,move} STATE;
 using namespace sf;
 
 int main()
@@ -20,11 +20,13 @@ int main()
     background.setOrigin(bg.getSize().x/2,bg.getSize().y/2);
     background.setPosition(view.getCenter());
 
-    // Player
-    Player player;
-
     // Enviroment
     Enviroment env;
+
+    // Player
+    Player player(&env);
+
+  
 
     // Box
     std::vector<Box*> boxes;
@@ -35,7 +37,7 @@ int main()
     while(window.isOpen())
     {
         float time = clock.getElapsedTime().asMicroseconds();
-        if((int)clock_box.getElapsedTime().asSeconds() == 1 && boxes.size() < 22)
+        if((int)clock_box.getElapsedTime().asSeconds() == 1 && boxes.size() < 30)
         {
             Box* box = new Box(&env); 
             boxes.push_back(box);
@@ -58,26 +60,28 @@ int main()
 
         // UPDATE block
         player.update(time);
-
-        // for(Box* box1 : boxes)
-        //     for(Box* box2 : boxes)
-        //         if(box1 != box2 && box1->num == box2->num)
-        //             box2->;
-                    
-
         for (Box* box : boxes) 
             box->update(time);
 
-
+        for (Box* box : boxes)
+            if(player.getRect().intersects(box->getRect())){
+                if (player._dy>0){ player._y = box->getRect().top -  64;  player._dy=0; player.setState();}
+				if (player._dy<0){ player._y = box->getRect().top + 32 ;   player._dy=0;}
+                if (player._dx>0)	{ player._x =  box->getRect().left -  32; }
+				if (player._dx<0)	{ player._x =  box->getRect().left + box->getRect().width ;}
+            }
 
         window.setView(view);
         window.draw(background);
-        player.draw(window);
         for (Box* box : boxes)
         { 
             box->draw(window);
         }
+        player.draw(window);
         window.display();
     }
+
+    for(Box* box: boxes)
+        delete box;
     return 0;
 }
