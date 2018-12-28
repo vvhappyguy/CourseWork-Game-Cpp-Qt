@@ -2,5 +2,6 @@
 #define TEXT_H
 
 #define PLAYER_TEXTURE_PATH "assets/tmp_player.png"
+#define BOX_TEXTURE_PATH "assets/wall.png"
 
 #endif

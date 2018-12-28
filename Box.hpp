@@ -6,27 +6,36 @@
 #include "Enviroment.hpp"
 #include <cstdlib>
 #include <iostream>
+#include <utility>
 
 using namespace sf;
 
 class Box
 {
     public:
-        float _x,_y;
+        std::pair<float, float> position;
+        std::pair<short, short> num;
+        float max_y_col = 0;
+        short int col  = -1;
         const float _dy = 0.1;
         float _dx = 0;
+        int y_col;
         Enviroment* env;
         Texture _texture;
         Sprite _sprite;
         enum {fall,stay} STATE;
 
-    Box(Enviroment*)
+    Box(Enviroment* env)
         {
-            std::cout << "Box c-tor" << std::endl;
+            this->col = (rand()%20);
+            this->max_y_col = env->getMaxYbyColumn(col) - 32;
+            this->y_col = env->countYbyColumn(col);
+
+            std::cout << "Box c-tor "<< max_y_col <<" " << y_col << std::endl;
             this->_texture.loadFromFile(BOX_TEXTURE_PATH);
             this->_sprite.setTexture(_texture);
-            this->_x = (rand()%20)*32;
-            this-> _y = 0;
+            position.first = col*32;
+            position.second = 0;
             this->_dx = 0;
             this->env = env;
             STATE = fall;
@@ -42,20 +51,15 @@ class Box
 
         void update(float time)
         {
-            this->_y += _dy*time;
-               
-
-                std::cout << _y << std::endl;
-                if (this->_y > 448)
+            num = env->getPostion(position.first,position.second);
+            position.second += _dy*time;
+                if (position.second > max_y_col)
                 {
-                    this->_y = 448;
+                    position.second = max_y_col;
                     STATE = stay;
+                    env->box_matrix[col][y_col] = 1;
                 }
-                
-
-            
-            _sprite.setPosition(this->_x,this->_y);
-            //std::cout << this->_y << std::endl;
+            _sprite.setPosition(position.first,position.second);
         };
 };
 

@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "Player.hpp"
+#include "Enviroment.hpp"
+#include "Box.hpp"
 #include <iostream>
 
 
@@ -18,31 +20,32 @@ int main()
     background.setOrigin(bg.getSize().x/2,bg.getSize().y/2);
     background.setPosition(view.getCenter());
 
-    // Debug lines
-    Vertex line [] = {
-        Vertex(Vector2f(0,0)),
-        Vertex(Vector2f(640,480))
-    };
-
     // Player
     Player player;
 
+    // Enviroment
+    Enviroment env;
+
     // Box
-    Texture box_texture;
-    box_texture.loadFromFile("assets/wall.png");
-    Sprite box_sprite(box_texture);
-    box_sprite.setPosition(0,0);
-    float box_x = 0;
-    float box_y = 0 ;
+    std::vector<Box*> boxes;
 
     Clock clock;
+    Clock clock_box;
 
     while(window.isOpen())
     {
         float time = clock.getElapsedTime().asMicroseconds();
+        if((int)clock_box.getElapsedTime().asSeconds() == 1 && boxes.size() < 22)
+        {
+            Box* box = new Box(&env); 
+            boxes.push_back(box);
+            clock_box.restart();
+        }
+            
+            
 		clock.restart();
 
-		time = time/500;  // ����� ���������� �������� ����
+		time = time/500;  
 
 		if (time > 40) time = 40;
 
@@ -53,16 +56,27 @@ int main()
 				window.close();
 		}
 
+        // UPDATE block
         player.update(time);
 
-        box_y += 0.1;
-        box_sprite.setPosition(box_x,box_y);
+        // for(Box* box1 : boxes)
+        //     for(Box* box2 : boxes)
+        //         if(box1 != box2 && box1->num == box2->num)
+        //             box2->;
+                    
+
+        for (Box* box : boxes) 
+            box->update(time);
+
+
 
         window.setView(view);
         window.draw(background);
-        window.draw(line,2,Lines);
         player.draw(window);
-        window.draw(box_sprite);
+        for (Box* box : boxes)
+        { 
+            box->draw(window);
+        }
         window.display();
     }
     return 0;
