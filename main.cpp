@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <time.h>
 #include <iostream>
 #include "pipe.h"
@@ -124,6 +125,11 @@ int main()
   sServer.setPosition(Vector2f(servPos * ts));
   sServer.move(offset);
 
+  Music music;
+  music.openFromFile("music.wav");
+  music.play();
+  music.setLoop(true);
+
   while (app.isOpen())
   {
     if (state == WIN)
@@ -147,6 +153,8 @@ int main()
             Sprite sBackground(t1);
             continue;
           }
+          if (state == WIN)
+            app.close();
 
           Vector2i pos = Mouse::getPosition(app) + Vector2i(ts / 2, ts / 2) - Vector2i(offset);
           pos /= ts;
@@ -195,9 +203,6 @@ int main()
               size++;
               sComp.setTextureRect(IntRect(0, 0, 36, 36));
             }
-              
-            
-
             sComp.setPosition(j * ts, i * ts);
             sComp.move(offset);
             app.draw(sComp);
