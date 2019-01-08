@@ -1,48 +1,14 @@
 #include <SFML/Graphics.hpp>
 #include <time.h>
+#include <iostream>
+#include "pipe.h"
 using namespace sf;
 
 const int N = 6;
 int ts = 54; //tile size
 Vector2f offset(65, 55);
-
-Vector2i Up(0, -1);
-Vector2i Down(0, 1);
-Vector2i Right(1, 0);
-Vector2i Left(-1, 0);
-
-Vector2i DIR[4] = {Up, Right, Down, Left};
-
-struct pipe
-{
-  std::vector<Vector2i> dirs;
-  int orientation;
-  float angle;
-  bool on;
-
-  pipe() { angle = 0; }
-
-  void rotate()
-  {
-    for (int i = 0; i < dirs.size(); i++)
-      if (dirs[i] == Up)
-        dirs[i] = Right;
-      else if (dirs[i] == Right)
-        dirs[i] = Down;
-      else if (dirs[i] == Down)
-        dirs[i] = Left;
-      else if (dirs[i] == Left)
-        dirs[i] = Up;
-  }
-
-  bool isConnect(Vector2i dir)
-  {
-    for (auto d : dirs)
-      if (d == dir)
-        return true;
-    return false;
-  }
-};
+int sizeOn = 0;
+int size = 0;
 
 pipe grid[N][N];
 pipe &cell(Vector2i v) { return grid[v.x][v.y]; }
@@ -57,7 +23,7 @@ void generatePuzzle()
   {
     int n = rand() % nodes.size();
     Vector2i v = nodes[n];
-    Vector2i d = DIR[rand() % 4];
+    Vector2i d = DIR[rand() % 4]; // Random side of pipe
 
     if (cell(v).dirs.size() == 3)
     {
@@ -92,6 +58,7 @@ void drop(Vector2i v)
 {
   if (cell(v).on)
     return;
+
   cell(v).on = true;
 
   for (auto d : DIR)
@@ -100,14 +67,21 @@ void drop(Vector2i v)
         drop(v + d);
 }
 
+enum GameMode
+{
+  START,
+  GAME,
+  WIN
+};
+
 int main()
 {
   srand(time(0));
-
+  GameMode state = START;
   RenderWindow app(VideoMode(390, 390), "The Pipe Puzzle!");
 
   Texture t1, t2, t3, t4;
-  t1.loadFromFile("images/background.png");
+  t1.loadFromFile("images/bg_menu.png");
   t2.loadFromFile("images/comp.png");
   t3.loadFromFile("images/server.png");
   t4.loadFromFile("images/pipes.png");
@@ -152,6 +126,11 @@ int main()
 
   while (app.isOpen())
   {
+    if (state == WIN)
+    {
+      t1.loadFromFile("images/bg_win.png");
+      Sprite sBackground(t1);
+    }
     Event e;
     while (app.pollEvent(e))
     {
@@ -161,6 +140,14 @@ int main()
       if (e.type == Event::MouseButtonPressed)
         if (e.key.code == Mouse::Left)
         {
+          if (state == START)
+          {
+            state = GAME;
+            t1.loadFromFile("images/background.png");
+            Sprite sBackground(t1);
+            continue;
+          }
+
           Vector2i pos = Mouse::getPosition(app) + Vector2i(ts / 2, ts / 2) - Vector2i(offset);
           pos /= ts;
           if (isOut(pos))
@@ -178,39 +165,54 @@ int main()
 
     app.clear();
     app.draw(sBackground);
-
-    for (int i = 0; i < N; i++)
-      for (int j = 0; j < N; j++)
-      {
-        pipe &p = grid[j][i];
-
-        int kind = p.dirs.size();
-        if (kind == 2 && p.dirs[0] == -p.dirs[1])
-          kind = 0;
-
-        p.angle += 5;
-        if (p.angle > p.orientation * 90)
-          p.angle = p.orientation * 90;
-
-        sPipe.setTextureRect(IntRect(ts * kind, 0, ts, ts));
-        sPipe.setRotation(p.angle);
-        sPipe.setPosition(j * ts, i * ts);
-        sPipe.move(offset);
-        app.draw(sPipe);
-
-        if (kind == 1)
+    if (state == GAME)
+    {
+      for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
         {
-          if (p.on)
-            sComp.setTextureRect(IntRect(53, 0, 36, 36));
-          else
-            sComp.setTextureRect(IntRect(0, 0, 36, 36));
-          sComp.setPosition(j * ts, i * ts);
-          sComp.move(offset);
-          app.draw(sComp);
-        }
-      }
+          pipe &p = grid[j][i];
 
-    app.draw(sServer);
+          int kind = p.dirs.size();
+          if (kind == 2 && p.dirs[0] == -p.dirs[1])
+            kind = 0;
+
+          p.angle += 5;
+          if (p.angle > p.orientation * 90)
+            p.angle = p.orientation * 90;
+
+          sPipe.setTextureRect(IntRect(ts * kind, 0, ts, ts));
+          sPipe.setRotation(p.angle);
+          sPipe.setPosition(j * ts, i * ts);
+          sPipe.move(offset);
+          app.draw(sPipe);
+
+          if (kind == 1)
+          {
+            if (p.on)
+              sComp.setTextureRect(IntRect(53, 0, 36, 36));
+            else
+            {
+              size++;
+              sComp.setTextureRect(IntRect(0, 0, 36, 36));
+            }
+              
+            
+
+            sComp.setPosition(j * ts, i * ts);
+            sComp.move(offset);
+            app.draw(sComp);
+          }
+        }
+      if (size == 0)
+        state = WIN;
+      std::cout << size << std::endl;
+      size = 0;
+
+      app.draw(sServer);
+    }
+
+    if (state == START)
+      app.draw(sBackground);
     app.display();
   }
 
