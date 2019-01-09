@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <time.h>
-#include <iostream>
+//#include <iostream>
 #include "pipe.h"
 using namespace sf;
 
@@ -210,7 +210,7 @@ int main()
         }
       if (size == 0)
         state = WIN;
-      std::cout << size << std::endl;
+      //std::cout << size << std::endl;
       size = 0;
 
       app.draw(sServer);
